@@ -55,8 +55,9 @@ export function Speedometer({
           animate={{ rotate: needleAngle + 90 }}
           initial={false}
           transition={{ type: "spring", stiffness: 90, damping: 13 }}
-          style={{ originX: `${CX}px`, originY: `${CY}px` }}
+          style={{ transformOrigin: `${CX}px ${CY}px`, transformBox: "view-box" }}
         >
+
           <line
             x1={CX}
             y1={CY}
