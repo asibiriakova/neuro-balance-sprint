@@ -51,23 +51,17 @@ export function Speedometer({
           );
         })}
 
-        <motion.g
-          animate={{ rotate: needleAngle + 90 }}
+        <motion.line
+          x1={CX}
+          y1={CY}
           initial={false}
+          animate={{ x2: polar(needleAngle, R - 30).x, y2: polar(needleAngle, R - 30).y }}
           transition={{ type: "spring", stiffness: 90, damping: 13 }}
-          style={{ transformOrigin: `${CX}px ${CY}px`, transformBox: "view-box" }}
-        >
+          stroke="var(--foreground)"
+          strokeWidth={3.5}
+          strokeLinecap="round"
+        />
 
-          <line
-            x1={CX}
-            y1={CY}
-            x2={CX}
-            y2={CY - R + 26}
-            stroke="var(--foreground)"
-            strokeWidth={3.5}
-            strokeLinecap="round"
-          />
-        </motion.g>
         <circle cx={CX} cy={CY} r={11} fill="var(--card)" stroke="var(--border)" strokeWidth={2} />
         <circle
           cx={CX}
