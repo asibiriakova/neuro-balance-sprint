@@ -3,7 +3,7 @@ import { STATES, stateColor, type DayLog } from "@/lib/neuro";
 export function Heatmap({ logs, currentDay }: { logs: DayLog[]; currentDay: number }) {
   return (
     <div>
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid max-w-[460px] grid-cols-7 gap-2">
         {logs.map((l) => (
           <div
             key={l.day}
