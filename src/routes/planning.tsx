@@ -309,10 +309,21 @@ function Planning() {
                   <p className="text-[11px] font-medium">{p.name}</p>
                   <p className="text-[10px] text-muted-foreground">{p.tagline}</p>
                   <ul className="mt-1 space-y-0.5">
-                    {p.lines.map((l) => (
+                    {p.lines.map((l, lineIndex) => (
                       <li key={l.label} className="text-[10px] text-muted-foreground">
-                        {l.cadence === "weekday" ? "Mon–Fri" : "Weekend"} · {l.minutes} min ·{" "}
-                        {l.label}
+                        {l.cadence === "weekday"
+                          ? `Mon–Fri · ${l.minutes} min · ${l.label}`
+                          : p.id === "a" && lineIndex === 3
+                            ? "Saturday · 150 min · Joy weekend block"
+                            : p.id === "a" && lineIndex === 4
+                              ? "Sunday · 120 min · Foundation weekend block / 30 min · Weekly reflection"
+                              : p.id === "b" && lineIndex === 3
+                                ? "Saturday · 90 min · Joy weekend block"
+                                : p.id === "b" && lineIndex === 4
+                                  ? "Sunday · 60 min · Foundation weekend block / 30 min · Weekly reflection"
+                                  : p.id === "b" && lineIndex === 5
+                                    ? ""
+                                    : `Weekend · ${l.minutes} min · ${l.label}`}
                       </li>
                     ))}
                   </ul>
