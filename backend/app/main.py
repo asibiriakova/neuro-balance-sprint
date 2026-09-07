@@ -38,9 +38,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# A single process-local, in-memory store for the whole app. Tests replace
-# this with a fresh instance per test (see tests/conftest.py) so cases
-# don't leak state into each other.
+# A single database-backed store for the whole app, pointed at
+# `NEUROSPRINT_DATABASE_URL` (SQLite file by default - see app/db.py).
+# Tests replace this with a fresh in-memory-SQLite instance per test (see
+# tests/conftest.py) so cases don't leak state into each other.
 app.state.store = create_store()
 
 app.include_router(auth.router)

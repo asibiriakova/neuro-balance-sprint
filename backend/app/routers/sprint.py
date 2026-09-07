@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.auth import get_current_user, get_store
 from app.models import NewTaskInput, SetGratitudeRequest, SetStateRequest, SprintData, StateId, Task
-from app.store import InMemoryStore, UserRecord
+from app.store import Store, UserRecord
 
 router = APIRouter(prefix="/api/sprints/current", tags=["sprint"])
 
@@ -20,7 +20,7 @@ PILLAR_CAP_HOURS = 10
 SPRINT_CAP_HOURS = 30
 
 
-def _get_sprint_or_404(store: InMemoryStore, user: UserRecord) -> SprintData:
+def _get_sprint_or_404(store: Store, user: UserRecord) -> SprintData:
     sprint = store.get_sprint(user.id)
     if sprint is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No active sprint")
@@ -37,7 +37,7 @@ def _find_task_or_404(sprint: SprintData, task_id: str) -> Task:
 @router.get("", response_model=SprintData)
 def get_current_sprint(
     user: UserRecord = Depends(get_current_user),
-    store: InMemoryStore = Depends(get_store),
+    store: Store = Depends(get_store),
 ) -> SprintData:
     return _get_sprint_or_404(store, user)
 
@@ -46,7 +46,7 @@ def get_current_sprint(
 def set_today_state(
     body: SetStateRequest,
     user: UserRecord = Depends(get_current_user),
-    store: InMemoryStore = Depends(get_store),
+    store: Store = Depends(get_store),
 ) -> SprintData:
     sprint = _get_sprint_or_404(store, user)
     try:
@@ -64,7 +64,7 @@ def set_today_state(
 def add_task(
     body: NewTaskInput,
     user: UserRecord = Depends(get_current_user),
-    store: InMemoryStore = Depends(get_store),
+    store: Store = Depends(get_store),
 ) -> SprintData:
     sprint = _get_sprint_or_404(store, user)
 
@@ -90,7 +90,7 @@ def add_task(
 def toggle_task(
     task_id: str,
     user: UserRecord = Depends(get_current_user),
-    store: InMemoryStore = Depends(get_store),
+    store: Store = Depends(get_store),
 ) -> SprintData:
     sprint = _get_sprint_or_404(store, user)
     task = _find_task_or_404(sprint, task_id)
@@ -102,7 +102,7 @@ def toggle_task(
 def toggle_priority(
     task_id: str,
     user: UserRecord = Depends(get_current_user),
-    store: InMemoryStore = Depends(get_store),
+    store: Store = Depends(get_store),
 ) -> SprintData:
     sprint = _get_sprint_or_404(store, user)
     _find_task_or_404(sprint, task_id)  # 404s on an unknown task id
@@ -120,7 +120,7 @@ def toggle_priority(
 def set_gratitude(
     body: SetGratitudeRequest,
     user: UserRecord = Depends(get_current_user),
-    store: InMemoryStore = Depends(get_store),
+    store: Store = Depends(get_store),
 ) -> SprintData:
     sprint = _get_sprint_or_404(store, user)
     sprint.gratitude = body.value

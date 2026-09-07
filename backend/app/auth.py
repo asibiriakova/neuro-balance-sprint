@@ -3,9 +3,9 @@
 Passwords are hashed with PBKDF2-HMAC-SHA256 (stdlib `hashlib`, no extra
 dependency) using a random per-password salt. Bearer tokens are opaque,
 high-entropy strings (`secrets.token_urlsafe`) issued at register/login time
-and held in the store's in-memory token table - not JWTs, despite the
-spec's `bearerFormat: JWT` hint, which is documentation of intent rather
-than a requirement this stage of the project needs to satisfy.
+and held in the store's `tokens` table - not JWTs, despite the spec's
+`bearerFormat: JWT` hint, which is documentation of intent rather than a
+requirement this stage of the project needs to satisfy.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING
 from fastapi import Header, HTTPException, Request, status
 
 if TYPE_CHECKING:
-    from app.store import InMemoryStore, UserRecord
+    from app.store import Store, UserRecord
 
 _PBKDF2_ITERATIONS = 260_000
 _ALGORITHM = "sha256"
@@ -41,8 +41,8 @@ def verify_password(password: str, hashed: str) -> bool:
     return hmac.compare_digest(candidate, expected)
 
 
-def get_store(request: Request) -> InMemoryStore:
-    """FastAPI dependency exposing the app's single in-memory store."""
+def get_store(request: Request) -> Store:
+    """FastAPI dependency exposing the app's single database-backed store."""
     return request.app.state.store
 
 

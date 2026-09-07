@@ -9,8 +9,9 @@ from app.store import DEMO_EMAIL, DEMO_PASSWORD, create_store
 
 @pytest.fixture()
 def client():
-    """A TestClient backed by a fresh, freshly-seeded store per test."""
-    app.state.store = create_store()
+    """A TestClient backed by a fresh, freshly-seeded, in-memory SQLite
+    store per test, so cases can't leak state into each other."""
+    app.state.store = create_store(database_url="sqlite:///:memory:")
     with TestClient(app) as c:
         yield c
 
