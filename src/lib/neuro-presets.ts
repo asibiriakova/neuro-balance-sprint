@@ -47,7 +47,6 @@ export const BUDGET_PRESETS: BudgetPreset[] = [
       { pillar: "joy", label: "Joy block", minutes: 20, cadence: "weekday" },
       { pillar: "foundation", label: "Foundation weekend block", minutes: 60, cadence: "weekend" },
       { pillar: "drive", label: "Drive weekend block", minutes: 90, cadence: "weekend" },
-      { pillar: "joy", label: "Weekly reflection", minutes: 30, cadence: "weekend" },
     ],
   },
 ];
