@@ -113,6 +113,7 @@ function Planning() {
   ]);
   const [input, setInput] = useState("");
   const [committed, setCommitted] = useState(false);
+  const [preset, setPreset] = useState<string | null>(null);
 
   const total = Object.values(hoursByPillar).reduce((a, b) => a + b, 0);
   const overPillar = PILLARS.filter((p) => hoursByPillar[p.id] > PILLAR_CAP);
