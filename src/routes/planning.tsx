@@ -321,9 +321,7 @@ function Planning() {
                                 ? "Saturday · 90 min · Joy weekend block"
                                 : p.id === "b" && lineIndex === 4
                                   ? "Sunday · 60 min · Foundation weekend block / 30 min · Weekly reflection"
-                                  : p.id === "b" && lineIndex === 5
-                                    ? ""
-                                    : `Weekend · ${l.minutes} min · ${l.label}`}
+                                  : `Weekend · ${l.minutes} min · ${l.label}`}
                       </li>
                     ))}
                   </ul>
