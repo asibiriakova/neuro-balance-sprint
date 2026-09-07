@@ -1,12 +1,20 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Plus, TriangleAlert, Check } from "lucide-react";
+import { Send, Plus, TriangleAlert, Check, Sparkles } from "lucide-react";
 import { AppShell } from "@/components/neuro/AppShell";
 import { SprintProvider, useSprint } from "@/lib/sprint-store";
 import { PILLARS, PILLAR_CAP, SPRINT_CAP, stateColor, uid, type PillarId } from "@/lib/neuro";
+import {
+  BUDGET_PRESETS,
+  IDEA_BANK,
+  presetTasks,
+  WEEKDAYS,
+  WEEKEND_BLOCKS,
+} from "@/lib/neuro-presets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/planning")({
@@ -94,6 +102,59 @@ function respond(prompt: string): Msg {
   };
 }
 
+function IdeaBank({
+  pillar,
+  onAdd,
+}: {
+  pillar: PillarId;
+  onAdd: (t: { title: string; hours: number; pillar: PillarId }) => void;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="secondary" size="sm" className="mt-2 h-7 w-full text-[11px]">
+          <Sparkles className="size-3" />
+          Idea bank
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="max-h-80 w-80 overflow-y-auto p-3">
+        <p className="text-xs font-semibold">
+          {PILLARS.find((p) => p.id === pillar)!.icon} Quick-add templates
+        </p>
+        {IDEA_BANK[pillar].map((g) => (
+          <div key={g.label} className="mt-3">
+            <p className="text-[11px] font-medium text-muted-foreground">{g.label}</p>
+            <ul className="mt-1 space-y-1">
+              {g.items.map((it) => (
+                <li key={it.en}>
+                  <button
+                    onClick={() => {
+                      onAdd({
+                        title: `${it.emoji} ${it.en}`,
+                        hours: Math.round((g.minutes / 60) * 10) / 10,
+                        pillar,
+                      });
+                      toast.success(`Added: ${it.en}`);
+                    }}
+                    className="flex w-full items-start gap-2 rounded-lg border bg-card px-2 py-1.5 text-left text-[11px] transition-colors hover:bg-secondary"
+                  >
+                    <span>{it.emoji}</span>
+                    <span className="flex-1">
+                      {it.en}
+                      <span className="block text-[10px] text-muted-foreground">{it.ru}</span>
+                    </span>
+                    <Plus className="size-3 shrink-0 opacity-60" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function Planning() {
   const { tasks, addTask, hoursByPillar } = useSprint();
   const [msgs, setMsgs] = useState<Msg[]>([
@@ -105,6 +166,7 @@ function Planning() {
   ]);
   const [input, setInput] = useState("");
   const [committed, setCommitted] = useState(false);
+  const [preset, setPreset] = useState<string | null>(null);
 
   const total = Object.values(hoursByPillar).reduce((a, b) => a + b, 0);
   const overPillar = PILLARS.filter((p) => hoursByPillar[p.id] > PILLAR_CAP);
@@ -223,16 +285,54 @@ function Planning() {
           )}
         </AnimatePresence>
 
+        {/* Time-budgeting switcher */}
+        <div className="mt-3 rounded-xl border bg-card/50 p-2.5">
+          <p className="text-xs font-semibold">Time-budgeting preset</p>
+          <p className="text-[10px] text-muted-foreground">
+            {WEEKDAYS} weekdays + {WEEKEND_BLOCKS} weekend blocks per sprint.
+          </p>
+          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+            {BUDGET_PRESETS.map((p) => {
+              const active = preset === p.id;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => {
+                    setPreset(p.id);
+                    presetTasks(p).forEach(addTask);
+                    toast.success(`${p.name} applied`);
+                  }}
+                  className={`rounded-lg border p-2 text-left transition-colors ${
+                    active ? "bg-secondary" : "hover:bg-secondary/60"
+                  }`}
+                >
+                  <p className="text-[11px] font-medium">{p.name}</p>
+                  <p className="text-[10px] text-muted-foreground">{p.tagline}</p>
+                  <ul className="mt-1 space-y-0.5">
+                    {p.lines.map((l) => (
+                      <li key={l.label} className="text-[10px] text-muted-foreground">
+                        {l.cadence === "weekday" ? "Mon–Fri" : "Weekend"} · {l.minutes} min ·{" "}
+                        {l.label}
+                      </li>
+                    ))}
+                  </ul>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="mt-3 grid flex-1 grid-cols-3 gap-3 overflow-y-auto">
           {PILLARS.map((p) => (
             <div key={p.id} className="rounded-xl border bg-card/50 p-2.5">
               <p className="text-xs font-semibold">
                 {p.icon} {p.label}
               </p>
-              <p className="mb-2 text-[10px] text-muted-foreground">
+              <p className="text-[10px] text-muted-foreground">
                 {hoursByPillar[p.id]}/{PILLAR_CAP}h
               </p>
-              <ul className="space-y-1.5">
+              <IdeaBank pillar={p.id} onAdd={addTask} />
+              <ul className="mt-2 space-y-1.5">
                 {tasks
                   .filter((t) => t.pillar === p.id)
                   .map((t) => (
