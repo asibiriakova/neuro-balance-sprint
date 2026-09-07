@@ -1,12 +1,20 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Plus, TriangleAlert, Check } from "lucide-react";
+import { Send, Plus, TriangleAlert, Check, Sparkles } from "lucide-react";
 import { AppShell } from "@/components/neuro/AppShell";
 import { SprintProvider, useSprint } from "@/lib/sprint-store";
 import { PILLARS, PILLAR_CAP, SPRINT_CAP, stateColor, uid, type PillarId } from "@/lib/neuro";
+import {
+  BUDGET_PRESETS,
+  IDEA_BANK,
+  presetTasks,
+  WEEKDAYS,
+  WEEKEND_BLOCKS,
+} from "@/lib/neuro-presets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/planning")({
