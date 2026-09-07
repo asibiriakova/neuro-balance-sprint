@@ -294,48 +294,59 @@ function Planning() {
 
         {/* Time-budgeting switcher */}
         <div className="mt-3 rounded-xl border bg-card/50 p-2.5">
-          <p className="text-xs font-semibold">Time-budgeting preset</p>
-          <p className="text-[10px] text-muted-foreground">
-            {WEEKDAYS} weekdays + {WEEKEND_BLOCKS} weekend blocks per sprint.
-          </p>
-          <div className="mt-2 grid gap-2 sm:grid-cols-2">
-            {BUDGET_PRESETS.map((p) => {
-              const active = preset === p.id;
-              return (
-                <button
-                  key={p.id}
-                  onClick={() => {
-                    setPreset(p.id);
-                    presetTasks(p).forEach(addTask);
-                    toast.success(`${p.name} applied`);
-                  }}
-                  className={`rounded-lg border p-2 text-left transition-colors ${
-                    active ? "bg-secondary" : "hover:bg-secondary/60"
-                  }`}
-                >
-                  <p className="text-[11px] font-medium">{p.name}</p>
-                  <p className="text-[10px] text-muted-foreground">{p.tagline}</p>
-                  <ul className="mt-1 space-y-0.5">
-                    {p.lines.map((l, lineIndex) => (
-                      <li key={l.label} className="text-[10px] text-muted-foreground">
-                        {l.cadence === "weekday"
-                          ? `Mon–Fri · ${l.minutes} min · ${l.label}`
-                          : p.id === "a" && lineIndex === 3
-                            ? "Saturday · 150 min · Joy weekend block"
-                            : p.id === "a" && lineIndex === 4
-                              ? "Sunday · 120 min · Foundation weekend block / 30 min · Weekly reflection"
-                              : p.id === "b" && lineIndex === 3
-                                ? "Saturday · 90 min · Joy weekend block"
-                                : p.id === "b" && lineIndex === 4
-                                  ? "Sunday · 60 min · Foundation weekend block / 30 min · Weekly reflection"
-                                  : `Weekend · ${l.minutes} min · ${l.label}`}
-                      </li>
-                    ))}
-                  </ul>
-                </button>
-              );
-            })}
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <p className="text-xs font-semibold">Time-budgeting preset</p>
+              <p className="text-[10px] text-muted-foreground">
+                {WEEKDAYS} weekdays + {WEEKEND_BLOCKS} weekend blocks per sprint.
+              </p>
+            </div>
+            <Select
+              value={preset ?? ""}
+              onValueChange={(id) => {
+                const p = BUDGET_PRESETS.find((x) => x.id === id);
+                if (!p) return;
+                setPreset(id);
+                presetTasks(p).forEach(addTask);
+                toast.success(`${p.name} applied`);
+              }}
+            >
+              <SelectTrigger className="w-52 text-xs">
+                <SelectValue placeholder="Choose a preset…" />
+              </SelectTrigger>
+              <SelectContent>
+                {BUDGET_PRESETS.map((p) => (
+                  <SelectItem key={p.id} value={p.id} className="text-xs">
+                    <span className="font-medium">{p.name}</span>
+                    <span className="ml-2 text-muted-foreground">{p.tagline}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+
+          {preset && (
+            <ul className="mt-2 space-y-0.5 border-t pt-2">
+              {(() => {
+                const p = BUDGET_PRESETS.find((x) => x.id === preset)!;
+                return p.lines.map((l, lineIndex) => (
+                  <li key={l.label} className="text-[10px] text-muted-foreground">
+                    {l.cadence === "weekday"
+                      ? `Mon–Fri · ${l.minutes} min · ${l.label}`
+                      : p.id === "a" && lineIndex === 3
+                        ? "Saturday · 150 min · Joy weekend block"
+                        : p.id === "a" && lineIndex === 4
+                          ? "Sunday · 120 min · Foundation weekend block / 30 min · Weekly reflection"
+                          : p.id === "b" && lineIndex === 3
+                            ? "Saturday · 90 min · Joy weekend block"
+                            : p.id === "b" && lineIndex === 4
+                              ? "Sunday · 60 min · Foundation weekend block / 30 min · Weekly reflection"
+                              : `Weekend · ${l.minutes} min · ${l.label}`}
+                  </li>
+                ));
+              })()}
+            </ul>
+          )}
         </div>
 
         <div className="mt-3 grid flex-1 grid-cols-3 gap-3 overflow-y-auto">
