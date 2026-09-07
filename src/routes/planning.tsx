@@ -102,6 +102,59 @@ function respond(prompt: string): Msg {
   };
 }
 
+function IdeaBank({
+  pillar,
+  onAdd,
+}: {
+  pillar: PillarId;
+  onAdd: (t: { title: string; hours: number; pillar: PillarId }) => void;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="secondary" size="sm" className="mt-2 h-7 w-full text-[11px]">
+          <Sparkles className="size-3" />
+          Idea bank
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="max-h-80 w-80 overflow-y-auto p-3">
+        <p className="text-xs font-semibold">
+          {PILLARS.find((p) => p.id === pillar)!.icon} Quick-add templates
+        </p>
+        {IDEA_BANK[pillar].map((g) => (
+          <div key={g.label} className="mt-3">
+            <p className="text-[11px] font-medium text-muted-foreground">{g.label}</p>
+            <ul className="mt-1 space-y-1">
+              {g.items.map((it) => (
+                <li key={it.en}>
+                  <button
+                    onClick={() => {
+                      onAdd({
+                        title: `${it.emoji} ${it.en}`,
+                        hours: Math.round((g.minutes / 60) * 10) / 10,
+                        pillar,
+                      });
+                      toast.success(`Added: ${it.en}`);
+                    }}
+                    className="flex w-full items-start gap-2 rounded-lg border bg-card px-2 py-1.5 text-left text-[11px] transition-colors hover:bg-secondary"
+                  >
+                    <span>{it.emoji}</span>
+                    <span className="flex-1">
+                      {it.en}
+                      <span className="block text-[10px] text-muted-foreground">{it.ru}</span>
+                    </span>
+                    <Plus className="size-3 shrink-0 opacity-60" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function Planning() {
   const { tasks, addTask, hoursByPillar } = useSprint();
   const [msgs, setMsgs] = useState<Msg[]>([
