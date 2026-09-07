@@ -10,17 +10,37 @@ needs in order for a client to obtain a token.
 from __future__ import annotations
 
 import os
+from contextlib import asynccontextmanager
+from typing import AsyncIterator
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.frontend import create_frontend_server
 from app.routers import auth, planning, sprint
 from app.store import create_store
+
+# `None` outside the Docker image (see app/frontend.py) - every route below
+# still works, there's just nothing to proxy non-`/api` requests to.
+_frontend_server = create_frontend_server()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    if _frontend_server is not None:
+        _frontend_server.start()
+    try:
+        yield
+    finally:
+        if _frontend_server is not None:
+            _frontend_server.stop()
+
 
 app = FastAPI(
     title="NeuroSprint API",
     version="1.0.0",
     description="Backend implementation of the contract in openapi.yaml.",
+    lifespan=lifespan,
 )
 
 # The frontend (Vite dev server) runs on its own origin, so the browser
@@ -52,3 +72,19 @@ app.include_router(planning.router)
 @app.get("/api/health", tags=["meta"])
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+# Catches everything the routes above don't (i.e. everything outside
+# `/api`) and hands it to the frontend - see app/frontend.py. Registered
+# last so it never shadows a real route, and only when there's an actual
+# frontend build to serve.
+if _frontend_server is not None:
+
+    @app.api_route(
+        "/{_full_path:path}",
+        methods=["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
+        include_in_schema=False,
+    )
+    async def _serve_frontend(request: Request, _full_path: str) -> Response:
+        assert _frontend_server is not None  # narrowed at module scope above
+        return await _frontend_server.proxy(request)

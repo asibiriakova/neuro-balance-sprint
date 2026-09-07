@@ -1,6 +1,8 @@
 .PHONY: help install backend-install backend-dev backend-test \
 	frontend-install frontend-dev frontend-build frontend-test frontend-lint frontend-format \
-	test
+	test docker-build docker-run
+
+DOCKER_IMAGE := neuro-balance-sprint
 
 help:
 	@echo "Targets:"
@@ -15,6 +17,8 @@ help:
 	@echo "  frontend-lint     - run eslint"
 	@echo "  frontend-format   - run prettier --write"
 	@echo "  test              - run backend + frontend test suites"
+	@echo "  docker-build      - build the combined backend+frontend image"
+	@echo "  docker-run        - run that image (http://localhost:8000, SQLite persisted to a named volume)"
 
 install: backend-install frontend-install
 
@@ -46,3 +50,9 @@ frontend-format:
 	cd frontend && bun run format
 
 test: backend-test frontend-test
+
+docker-build:
+	docker build -t $(DOCKER_IMAGE) .
+
+docker-run:
+	docker run --rm -p 8000:8000 -v neurosprint-data:/data $(DOCKER_IMAGE)
