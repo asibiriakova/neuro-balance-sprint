@@ -7,7 +7,7 @@ import { Speedometer } from "@/components/neuro/Speedometer";
 import { Heatmap } from "@/components/neuro/Heatmap";
 import { TimeGauge } from "@/components/neuro/TimeGauge";
 import { SprintProvider, useSprint } from "@/lib/sprint-store";
-import { PILLARS, PILLAR_CAP, SPRINT_CAP, STATES, ZONES, stateColor } from "@/lib/neuro";
+import { PILLARS, PILLAR_CAP, SPRINT_CAP, STATES, stateColor } from "@/lib/neuro";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -53,8 +53,6 @@ function Dashboard() {
     hoursByPillar,
   } = useSprint();
   const [note, setNote] = useState(gratitude);
-
-  const zone = todayState ? STATES.find((s) => s.id === todayState)!.zone : null;
   const totalHours = Object.values(hoursByPillar).reduce((a, b) => a + b, 0);
 
   return (
@@ -66,18 +64,15 @@ function Dashboard() {
           <span className="text-xs text-muted-foreground">Day {day} · 21-day sprint</span>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div>
-            <Speedometer
-              value={todayState}
-              onChange={(s) => {
-                setTodayState(s);
-                const z = STATES.find((x) => x.id === s)!.zone;
-                if (z !== "integration") toast("Off-window state logged — try an SOS practice.");
-              }}
-            />
-          </div>
-
+        <div>
+          <Speedometer
+            value={todayState}
+            onChange={(s) => {
+              setTodayState(s);
+              const z = STATES.find((x) => x.id === s)!.zone;
+              if (z !== "integration") toast("Off-window state logged — try an SOS practice.");
+            }}
+          />
         </div>
 
         <div className="mt-6 grid gap-6 md:grid-cols-2">
