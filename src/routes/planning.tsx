@@ -231,16 +231,54 @@ function Planning() {
           )}
         </AnimatePresence>
 
+        {/* Time-budgeting switcher */}
+        <div className="mt-3 rounded-xl border bg-card/50 p-2.5">
+          <p className="text-xs font-semibold">Time-budgeting preset</p>
+          <p className="text-[10px] text-muted-foreground">
+            {WEEKDAYS} weekdays + {WEEKEND_BLOCKS} weekend blocks per sprint.
+          </p>
+          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+            {BUDGET_PRESETS.map((p) => {
+              const active = preset === p.id;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => {
+                    setPreset(p.id);
+                    presetTasks(p).forEach(addTask);
+                    toast.success(`${p.name} applied`);
+                  }}
+                  className={`rounded-lg border p-2 text-left transition-colors ${
+                    active ? "bg-secondary" : "hover:bg-secondary/60"
+                  }`}
+                >
+                  <p className="text-[11px] font-medium">{p.name}</p>
+                  <p className="text-[10px] text-muted-foreground">{p.tagline}</p>
+                  <ul className="mt-1 space-y-0.5">
+                    {p.lines.map((l) => (
+                      <li key={l.label} className="text-[10px] text-muted-foreground">
+                        {l.cadence === "weekday" ? "Mon–Fri" : "Weekend"} · {l.minutes} min ·{" "}
+                        {l.label}
+                      </li>
+                    ))}
+                  </ul>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="mt-3 grid flex-1 grid-cols-3 gap-3 overflow-y-auto">
           {PILLARS.map((p) => (
             <div key={p.id} className="rounded-xl border bg-card/50 p-2.5">
               <p className="text-xs font-semibold">
                 {p.icon} {p.label}
               </p>
-              <p className="mb-2 text-[10px] text-muted-foreground">
+              <p className="text-[10px] text-muted-foreground">
                 {hoursByPillar[p.id]}/{PILLAR_CAP}h
               </p>
-              <ul className="space-y-1.5">
+              <IdeaBank pillar={p.id} onAdd={addTask} />
+              <ul className="mt-2 space-y-1.5">
                 {tasks
                   .filter((t) => t.pillar === p.id)
                   .map((t) => (
