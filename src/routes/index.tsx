@@ -78,36 +78,6 @@ function Dashboard() {
             />
           </div>
 
-          <div className="space-y-3">
-            {(["burnout", "integration", "distress"] as const).map((z) => {
-              const active = zone === z;
-              const accent =
-                z === "burnout"
-                  ? stateColor("apathy")
-                  : z === "integration"
-                    ? stateColor("balance")
-                    : stateColor("panic");
-              return (
-                <motion.div
-                  key={z}
-                  animate={{ scale: active ? 1.015 : 1 }}
-                  className="rounded-xl border p-3 transition-colors"
-                  style={{
-                    borderColor: active ? accent : "var(--border)",
-                    background: active
-                      ? `color-mix(in oklab, ${accent} 10%, transparent)`
-                      : "transparent",
-                  }}
-                >
-                  <p className="text-sm font-medium" style={{ color: active ? accent : undefined }}>
-                    {ZONES[z].label}
-                  </p>
-                  <p className="text-[11px] text-muted-foreground">{ZONES[z].ru}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{ZONES[z].blurb}</p>
-                </motion.div>
-              );
-            })}
-          </div>
         </div>
 
         <div className="mt-6 grid gap-6 md:grid-cols-2">
