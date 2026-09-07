@@ -7,7 +7,7 @@ import { Speedometer } from "@/components/neuro/Speedometer";
 import { Heatmap } from "@/components/neuro/Heatmap";
 import { TimeGauge } from "@/components/neuro/TimeGauge";
 import { SprintProvider, useSprint } from "@/lib/sprint-store";
-import { PILLARS, PILLAR_CAP, SPRINT_CAP, STATES, ZONES, stateColor } from "@/lib/neuro";
+import { PILLARS, PILLAR_CAP, SPRINT_CAP, STATES, stateColor } from "@/lib/neuro";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -53,8 +53,6 @@ function Dashboard() {
     hoursByPillar,
   } = useSprint();
   const [note, setNote] = useState(gratitude);
-
-  const zone = todayState ? STATES.find((s) => s.id === todayState)!.zone : null;
   const totalHours = Object.values(hoursByPillar).reduce((a, b) => a + b, 0);
 
   return (
@@ -66,48 +64,15 @@ function Dashboard() {
           <span className="text-xs text-muted-foreground">Day {day} · 21-day sprint</span>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div>
-            <Speedometer
-              value={todayState}
-              onChange={(s) => {
-                setTodayState(s);
-                const z = STATES.find((x) => x.id === s)!.zone;
-                if (z !== "integration") toast("Off-window state logged — try an SOS practice.");
-              }}
-            />
-          </div>
-
-          <div className="space-y-3">
-            {(["burnout", "integration", "distress"] as const).map((z) => {
-              const active = zone === z;
-              const accent =
-                z === "burnout"
-                  ? stateColor("apathy")
-                  : z === "integration"
-                    ? stateColor("balance")
-                    : stateColor("panic");
-              return (
-                <motion.div
-                  key={z}
-                  animate={{ scale: active ? 1.015 : 1 }}
-                  className="rounded-xl border p-3 transition-colors"
-                  style={{
-                    borderColor: active ? accent : "var(--border)",
-                    background: active
-                      ? `color-mix(in oklab, ${accent} 10%, transparent)`
-                      : "transparent",
-                  }}
-                >
-                  <p className="text-sm font-medium" style={{ color: active ? accent : undefined }}>
-                    {ZONES[z].label}
-                  </p>
-                  <p className="text-[11px] text-muted-foreground">{ZONES[z].ru}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{ZONES[z].blurb}</p>
-                </motion.div>
-              );
-            })}
-          </div>
+        <div>
+          <Speedometer
+            value={todayState}
+            onChange={(s) => {
+              setTodayState(s);
+              const z = STATES.find((x) => x.id === s)!.zone;
+              if (z !== "integration") toast("Off-window state logged — try an SOS practice.");
+            }}
+          />
         </div>
 
         <div className="mt-6 grid gap-6 md:grid-cols-2">
