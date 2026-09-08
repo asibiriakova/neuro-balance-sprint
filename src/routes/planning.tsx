@@ -62,53 +62,6 @@ const CHIPS = [
   "Balance my cognitive load",
 ];
 
-function respond(prompt: string): Msg {
-  const p = prompt.toLowerCase();
-  if (p.includes("fitness") || p.includes("health"))
-    return {
-      id: uid(),
-      role: "ai",
-      text: "Fitness is a Foundation goal. Split it into recoverable micro-blocks so the sprint stays under 10h:",
-      suggestions: [
-        { title: "Zone-2 cardio ×3 / week", hours: 3, pillar: "foundation" },
-        { title: "Strength session ×2 / week", hours: 3, pillar: "foundation" },
-        { title: "Evening mobility 10 min", hours: 2, pillar: "foundation" },
-      ],
-    };
-  if (p.includes("drive") || p.includes("career") || p.includes("skill"))
-    return {
-      id: uid(),
-      role: "ai",
-      text: "Here is a 10h Drive backlog with one ambitious leap and two supporting blocks:",
-      suggestions: [
-        { title: "Ambitious leap: publish case study", hours: 4, pillar: "drive" },
-        { title: "Deep-work skill block ×3", hours: 4, pillar: "drive" },
-        { title: "Weekly review + next-step mapping", hours: 2, pillar: "drive" },
-      ],
-    };
-  if (p.includes("balance") || p.includes("load"))
-    return {
-      id: uid(),
-      role: "ai",
-      text: "Your Drive column carries the highest cognitive cost. Add sensory recovery so the prefrontal cortex stays online:",
-      suggestions: [
-        { title: "Screen-free walk after deep work", hours: 2, pillar: "joy" },
-        { title: "Sensory recovery: sauna or bath", hours: 2, pillar: "joy" },
-        { title: "Protected 8h sleep window", hours: 3, pillar: "foundation" },
-      ],
-    };
-  return {
-    id: uid(),
-    role: "ai",
-    text: "Let's decompose that. Here are three micro-tasks sized for a 21-day sprint:",
-    suggestions: [
-      { title: `${prompt.slice(0, 38)} — first visible step`, hours: 2, pillar: "drive" },
-      { title: `${prompt.slice(0, 38)} — recurring practice`, hours: 3, pillar: "foundation" },
-      { title: `${prompt.slice(0, 38)} — celebrate progress`, hours: 1, pillar: "joy" },
-    ],
-  };
-}
-
 function IdeaBank({
   pillar,
   onAdd,
@@ -163,7 +116,7 @@ function IdeaBank({
 }
 
 function Planning() {
-  const { tasks, addTask, hoursByPillar } = useSprint();
+  const { tasks, addTask, hoursByPillar, askAssistant, commitSprint } = useSprint();
   const [msgs, setMsgs] = useState<Msg[]>([
     {
       id: uid(),
@@ -178,10 +131,12 @@ function Planning() {
   const total = Object.values(hoursByPillar).reduce((a, b) => a + b, 0);
   const overPillar = PILLARS.filter((p) => hoursByPillar[p.id] > PILLAR_CAP);
 
-  const send = (text: string) => {
+  const send = async (text: string) => {
     if (!text.trim()) return;
-    setMsgs((m) => [...m, { id: uid(), role: "user", text }, respond(text)]);
+    setMsgs((m) => [...m, { id: uid(), role: "user", text }]);
     setInput("");
+    const reply = await askAssistant(text);
+    setMsgs((m) => [...m, { ...reply, role: "ai" }]);
   };
 
   return (
@@ -235,7 +190,7 @@ function Planning() {
           {CHIPS.map((c) => (
             <button
               key={c}
-              onClick={() => send(c)}
+              onClick={() => void send(c)}
               className="rounded-full border px-2.5 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
               {c}
@@ -246,7 +201,7 @@ function Planning() {
           className="mt-2 flex gap-2"
           onSubmit={(e) => {
             e.preventDefault();
-            send(input);
+            void send(input);
           }}
         >
           <Input
