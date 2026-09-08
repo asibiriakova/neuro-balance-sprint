@@ -51,7 +51,7 @@ const CHECKLIST = [
 ];
 
 function Reflection() {
-  const { archive } = useSprint();
+  const { archive, saveReflection, saveJoyPassana } = useSprint();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<string[]>(["", "", "", ""]);
   const [duration, setDuration] = useState(DURATIONS[1]!);
@@ -121,9 +121,17 @@ function Reflection() {
                   <ArrowLeft className="size-4" /> Back
                 </Button>
                 <Button
-                  onClick={() => {
+                  onClick={async () => {
                     setStep((s) => s + 1);
-                    if (step === STEPS.length - 1) toast.success("Sprint reflection saved");
+                    if (step === STEPS.length - 1) {
+                      await saveReflection({
+                        keyChange: answers[0] ?? "",
+                        actions: answers[1] ?? "",
+                        insight: answers[2] ?? "",
+                        opportunities: answers[3] ?? "",
+                      });
+                      toast.success("Sprint reflection saved");
+                    }
                   }}
                 >
                   {step === STEPS.length - 1 ? "Finish" : "Next"} <ArrowRight className="size-4" />
@@ -143,7 +151,10 @@ function Reflection() {
           {DURATIONS.map((d) => (
             <button
               key={d}
-              onClick={() => setDuration(d)}
+              onClick={() => {
+                setDuration(d);
+                void saveJoyPassana({ duration: d, checklist: checked });
+              }}
               className="rounded-full border px-3 py-1.5 text-xs transition-colors"
               style={{
                 borderColor: duration === d ? stateColor("relaxation") : "var(--border)",
@@ -163,7 +174,11 @@ function Reflection() {
               <Checkbox
                 checked={checked.includes(c)}
                 onCheckedChange={() =>
-                  setChecked((s) => (s.includes(c) ? s.filter((x) => x !== c) : [...s, c]))
+                  setChecked((s) => {
+                    const next = s.includes(c) ? s.filter((x) => x !== c) : [...s, c];
+                    void saveJoyPassana({ duration, checklist: next });
+                    return next;
+                  })
                 }
               />
               <span className={checked.includes(c) ? "text-muted-foreground line-through" : ""}>{c}</span>
