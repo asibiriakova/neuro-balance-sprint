@@ -331,7 +331,8 @@ function Planning() {
         <Button
           className="mt-3"
           disabled={committed}
-          onClick={() => {
+          onClick={async () => {
+            await commitSprint();
             setCommitted(true);
             toast.success("Sprint committed. 21 days start now.");
           }}
